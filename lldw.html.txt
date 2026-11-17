@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晚餐选择转盘</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:#f4f4f4;
+  font-family:system-ui, sans-serif;
+}
+.wrap{
+  position:relative;
+  width:min(90vw,420px);
+  height:min(90vw,420px);
+}
+#wheel{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  box-shadow:0 0 14px #0003;
+  transition: all 4s cubic-bezier(0.17,0.67,0.12,0.99);
+}
+.pointer{
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;
+  height:0;
+  border-left:22px solid transparent;
+  border-right:22px solid transparent;
+  border-top:36px solid red;
+  z-index:9;
+}
+#btn{
+  margin-top:32px;
+  padding:14px 40px;
+  border:none;
+  border-radius:10px;
+  background:#2285ff;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+}
+#btn:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+#res{
+  margin-top:24px;
+  font-size:22px;
+  font-weight:bold;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pointer"></div>
+  <canvas id="wheel" width="420" height="420"></canvas>
+</div>
+<button id="btn">开始转动</button>
+<div id="res"></div>
+
+<script>
+// 晚餐菜品 + 独立背景颜色
+const itemList = [
+  {name:"鱼香肉丝", color:"#E63946"},
+  {name:"番茄炒蛋", color:"#FF4500"},
+  {name:"青椒肉丝", color:"#32CD32"},
+  {name:"红烧鱼", color:"#8B0000"},
+  {name:"土豆烧牛肉", color:"#D2691E"},
+  {name:"麻婆豆腐", color:"#FF6347"},
+  {name:"清炒时蔬", color:"#2E8B57"},
+  {name:"回锅肉", color:"#DC143C"},
+  {name:"糖醋排骨", color:"#FF8C00"},
+  {name:"香菇炖鸡", color:"#DEB887"},
+  {name:"蒜蓉虾", color:"#4169E1"},
+  {name:"萝卜排骨汤", color:"#B0C4DE"},
+  {name:"韭菜炒蛋", color:"#FFD700"},
+  {name:"干锅花菜", color:"#CD853F"},
+  {name:"酸菜鱼", color:"#008080"},
+  {name:"小炒黄牛肉", color:"#A52A2A"},
+  {name:"凉拌黄瓜", color:"#20B2AA"},
+  {name:"宫保鸡丁", color:"#FF9500"},
+  {name:"冬瓜丸子汤", color:"#87CEFA"},
+  {name:"梅菜扣肉", color:"#654321"}
+];
+
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const btn = document.getElementById("btn");
+const res = document.getElementById("res");
+const count = itemList.length;
+const perAngle = 2 * Math.PI / count;
+let totalDeg = 0;
+let spinning = false;
+
+function drawWheel(){
+  ctx.clearRect(0,0,420,420);
+  for(let i = 0; i < count; i++){
+    ctx.beginPath();
+    ctx.moveTo(210,210);
+    ctx.arc(210,210,210, i*perAngle, (i+1)*perAngle);
+    ctx.closePath();
+    ctx.fillStyle = itemList[i].color;
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(210,210);
+    ctx.rotate(i * perAngle + perAngle / 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText(itemList[i].name, 85, 6);
+    ctx.restore();
+  }
+}
+
+btn.onclick = async ()=>{
+  if(spinning) return;
+  spinning = true;
+  btn.disabled = true;
+  res.innerText = "";
+
+  const ranRound = 8 + Math.random() * 12;
+  const randomIndex = Math.floor(Math.random() * count);
+  const targetDeg = totalDeg + ranRound * 360 + (360 - randomIndex * (360 / count));
+  totalDeg = targetDeg;
+  canvas.style.transform = `rotate(${targetDeg}deg)`;
+
+  setTimeout(()=>{
+    res.innerText = "✨今晚吃：" + itemList[randomIndex].name;
+    spinning = false;
+    btn.disabled = false;
+  }, 4000)
+}
+
+drawWheel();
+</script>
+</body>
+</html>
